@@ -1,12 +1,18 @@
 <?php
 require_once('classes/database.php');
 $con = new database();
+session_start();
 
+if(empty($_SESSION['user'])){
+  header('location:login.php');
+}
 
 
 if(isset($_POST['delete'])){
     $id = $_POST['id'];
-    if($con->delete($id)){
+    if($con->delete($id))
+    {
+      $_SESSION['user'] = $result ['user'];
         header('location:index.php');
     } else{
         echo "Something went wrong.";

@@ -28,22 +28,13 @@ class database
 
     }
 
-    function signupUser($username, $password, $firstname, $lastname, $birthday, $sex){
-        $con = $this->opencon(); 
-
-    $query = $con->prepare("SELECT user FROM users WHERE user= ?");
-    $query->execute([$username]);
-    $existingUser = $query->fetch();
-
-    if ($existingUser){ 
-        return false;
-    }
-   
-    $con->prepare("INSERT INTO users (user, pass, firstname, lastname, sex, birthday) VALUES (?,?,?,?,?,?)")-> execute([$username, $password, $firstname, $lastname, $birthday, $sex]);
-
-    return $con->lastInsertId();
-
-    }
+    function signupUser($firstname, $lastname, $birthday, $sex, $email, $username, $password, $profilePicture)
+    {
+        $con = $this->opencon();
+        // Save user data along with profile picture path to the database
+        $con->prepare("INSERT INTO users (firstname, lastname, birthday, sex, email, user, pass, user_profile_picture) VALUES (?,?,?,?,?,?,?,?)")->execute([$firstname, $lastname, $birthday, $sex, $email, $username, $password, $profilePicture]);
+        return $con->lastInsertId();
+        }
 
     function insertAddress($user_id,$street,$barangay,$city,$province){
         $con = $this->opencon(); 
@@ -53,7 +44,16 @@ class database
     
    function view() {
     $con = $this->opencon();
-    return $con->query("SELECT users.user_id, users.firstname, users.lastname, users.birthday, users.sex, users.user, CONCAT( user_address.user_street, ' ', user_address.user_barangay, ' ', user_address.user_city, ' ', user_address.user_province ) AS Address FROM users INNER JOIN user_address ON users.user_id = user_address.user_id;")->fetchALL();
+    return $con->query("SELECT 
+    users.user_id,
+     users.firstname, 
+     users.lastname, 
+     users.birthday, 
+     users.sex, 
+     users.user,
+     users.user_profile_picture, 
+     CONCAT( user_address.user_street, ' ', user_address.user_barangay, ' ', user_address.user_city, ' ', user_address.user_province ) 
+     AS Address FROM users INNER JOIN user_address ON users.user_id = user_address.user_id;")->fetchALL();
    }
 
 function delete ($id) {

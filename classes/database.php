@@ -6,10 +6,24 @@ class database
         return new PDO('mysql:host=localhost;dbname=phpoop_221','root','');
     }
  
-    function check($username, $password, ){
+    function check($username, $password) {
+        // Open database connection
         $con = $this->opencon();
-        $query = "SELECT * from users WHERE user='".$username. "'&&pass='".$password."'";
-        return $con->query($query)->fetch();
+    
+        // Prepare the SQL query
+        $query = $con->prepare("SELECT * FROM users WHERE user = ?");
+        $query->execute([$username]);
+    
+        // Fetch the user data as an associative array
+        $user = $query->fetch(PDO::FETCH_ASSOC);
+    
+        // If a user is found, verify the password
+        if ($user && password_verify($password, $user['pass'])) {
+            return $user;
+        }
+    
+        // If no user is found or password is incorrect, return false
+        return false;
     }
 
     function signup($username, $password, $firstname, $lastname, $birthday, $sex){
@@ -103,4 +117,30 @@ function UpdateUserAdd($id,$barangay,$street,$city,$province){
         return false;
         }
     }
+
+    function validateCurrentPassword($userId, $currentPassword) {
+        // Open database connection
+        $con = $this->opencon();
+    
+        // Prepare the SQL query
+        $query = $con->prepare("SELECT pass FROM users WHERE user_id = ?");
+        $query->execute([$userId]);
+    
+        // Fetch the user data as an associative array
+        $user = $query->fetch(PDO::FETCH_ASSOC);
+    
+        // If a user is found, verify the password
+        if ($user && password_verify($currentPassword, $user['pass'])) {
+            return true;
+        }
+    
+        // If no user is found or password is incorrect, return false
+        return false;
+    }
+    function updatePassword($userId, $hashedPassword) {
+        $con = $this->opencon();
+        $query = $con->prepare("UPDATE users SET pass = ? WHERE user_id = ?");
+        return $query->execute([$hashedPassword, $userId]);
+    }
+
 }

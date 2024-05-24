@@ -3,26 +3,38 @@ require_once('classes/database.php');
 $con = new database();
 session_start();
 
-if(isset($_SESSION['user'])){
-  header('location:index.php');
+if (isset($_SESSION['username']) && isset($_SESSION['account_type'])) {
+  if ($_SESSION['account_type'] == 0) {
+    header('location:index.php');
+  } else if ($_SESSION['account_type'] == 1) {
+    header('location:user_account.php');
+  }
+  exit();
 }
 
-if(isset($_POST['login'])){
+$error = ""; // Initialize error variable
+
+if (isset($_POST['Login'])) {
   $username = $_POST['user'];
   $password = $_POST['pass'];
-  $result = $con->check($username,$password);
+  $result = $con->check($username, $password);
 
-  if($result){
-    if($result['user'] == $_POST['user'] && $result['pass'] == $_POST['pass']){
+  if ($result) {
       $_SESSION['user'] = $result['user'];
-      header('location:index.php');
-    } else {
-      echo 'Incorrect username or password. Please try again.';
-    }
-   } else {
-      echo 'Error occured while logging in. Please try again.';
-    }
-    }
+      $_SESSION['account_type'] = $result['account_type'];
+      $_SESSION['user_id'] = $result['user_id'];
+      $_SESSION['profilepicture'] = $result['user_profile_picture'];
+      // Redirect based on account type
+      if ($result['account_type'] == 0) {
+        header('location:index.php');
+      } else if ($result['account_type'] == 1) {
+        header('location:user_account.php');
+      }
+      exit();
+  } else {
+      $error = "Incorrect username or password. Please try again.";
+  }
+}
 
 ?>
 
@@ -52,7 +64,7 @@ if(isset($_POST['login'])){
     </div>
     <div class="container">
       <div class="row gx-1">
-        <div class="col"><input type="submit" value="Login" class="btn btn-primary btn-block" name="login"></div>
+        <div class="col"><input type="submit" value="Login" class="btn btn-primary btn-block" name="Login"></div>
         <div class="col"><a href="signup.php" input type="submit" class="btn btn-danger btn-block" name="Signup">Sign Up</a></div>
       </div>
     </div>
